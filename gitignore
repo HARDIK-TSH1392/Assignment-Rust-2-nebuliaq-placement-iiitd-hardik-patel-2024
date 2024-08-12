@@ -1,0 +1,44 @@
+
+# Ignore compiled binary files
+/target/
+/**/target/
+**/*.rs.bk
+**/*.rs.swp
+
+# Ignore Cargo-specific files
+/.cargo/
+/Cargo.lock
+
+# Ignore build artifacts
+**/*.d
+**/*.o
+**/*.so
+
+# Ignore editor specific files
+**/.idea/
+**/.vscode/
+**/.DS_Store
+
+# Ignore logs and temporary files
+/logs/
+/tmp/
+*.log
+*.tmp
+
+# Ignore README backup files
+README.md.bk
+
+# Ignore any other temporary files
+*.bak
+*.swp
+*.tmp
+*.old
+
+# Other generated files
+/coverage/
+*.profraw
+*.profdata
+
+# Ignore Python environment files if any Python tools are used
+/venv/
+/.env/
