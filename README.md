@@ -77,11 +77,3 @@ cargo run --bin rust_log_indexer
 
 The server will index the log messages into Quickwit when the buffer is flushed. The indexed logs can then be searched or queried using Quickwit’s search capabilities.
 
-### Future Enhancements
-
-- **Retry Mechanism**: Currently, the server logs errors if the Quickwit indexing fails. A retry mechanism could be added to attempt indexing multiple times before giving up.
-- **Configuration**: Paths and other settings could be made configurable via environment variables or command-line arguments.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
