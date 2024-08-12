@@ -10,10 +10,21 @@ async fn send_log_messages(rate: u64, addr: &str) {
 
     loop {
         interval.tick().await;
-        let log_message = format!("Log message {}", count);
-        if let Err(_) = stream.write_all(log_message.as_bytes()).await {
-            println!("Connection lost. Attempting to reconnect...");
-            stream = TcpStream::connect(addr).await.unwrap();
+        let log_message = format!("{{\"log_message\": \"Log message {}\"}}", count); // JSON format for better structure
+        if let Err(e) = stream.write_all(log_message.as_bytes()).await {
+            println!("Connection lost. Attempting to reconnect... Error: {}", e);
+            loop {
+                match TcpStream::connect(addr).await {
+                    Ok(s) => {
+                        stream = s;
+                        break;
+                    }
+                    Err(e) => {
+                        println!("Reconnection failed, retrying... Error: {}", e);
+                        time::sleep(Duration::from_secs(1)).await;
+                    }
+                }
+            }
         }
         count += 1;
     }

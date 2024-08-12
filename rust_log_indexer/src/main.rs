@@ -3,6 +3,7 @@ use tokio::io::AsyncReadExt;
 use tokio::sync::Mutex;
 use tokio::time::{self, Duration};
 use std::sync::Arc;
+use tokio::signal;
 
 struct LogServer {
     buffer: Arc<Mutex<Vec<String>>>,
@@ -19,50 +20,66 @@ impl LogServer {
         let listener = TcpListener::bind(addr).await.unwrap();
         let buffer = Arc::clone(&self.buffer);
 
+        // Handle the periodic flushing of the buffer
+        let buffer_clone = Arc::clone(&self.buffer);
         tokio::spawn(async move {
             let mut interval = time::interval(Duration::from_secs(10));
 
             loop {
                 interval.tick().await;
-                Self::flush_buffer(&buffer).await;
+                Self::flush_buffer(&buffer_clone).await;
             }
         });
 
-        loop {
-            let (mut socket, _) = listener.accept().await.unwrap();
-            let buffer = Arc::clone(&self.buffer);
-
-            tokio::spawn(async move {
-                let mut buf = [0; 1024];
+        // Graceful shutdown handling
+        let shutdown_signal = signal::ctrl_c();
+        tokio::select! {
+            _ = async {
                 loop {
-                    match socket.read(&mut buf).await {
-                        Ok(0) => break,
-                        Ok(n) => {
-                            let msg = String::from_utf8_lossy(&buf[..n]).to_string();
-                            let mut buffer_guard = buffer.lock().await;
-                            buffer_guard.push(msg);
+                    let (mut socket, _) = listener.accept().await.unwrap();
+                    let buffer_clone = Arc::clone(&buffer);
 
-                            if buffer_guard.len() >= 100 {
-                                // Pass the Arc<Mutex<Vec<String>>> instead of the guard
-                                Self::flush_buffer(&buffer).await;
+                    tokio::spawn(async move {
+                        let mut buf = [0; 1024];
+                        loop {
+                            match socket.read(&mut buf).await {
+                                Ok(0) => break, // Connection closed by client
+                                Ok(n) => {
+                                    let msg = String::from_utf8_lossy(&buf[..n]).to_string();
+                                    let mut buffer_guard = buffer_clone.lock().await;
+                                    buffer_guard.push(msg);
+
+                                    if buffer_guard.len() >= 100 {
+                                        // Flush buffer when it reaches 100 messages
+                                        Self::flush_buffer(&buffer_clone).await;
+                                    }
+                                }
+                                Err(e) => {
+                                    println!("Error reading from socket: {}", e);
+                                    break;
+                                }
                             }
                         }
-                        Err(_) => {
-                            break;
-                        }
-                    }
+                    });
                 }
-            });
+            } => {},
+            _ = shutdown_signal => {
+                println!("Shutdown signal received, flushing buffer and exiting...");
+                Self::flush_buffer(&buffer).await;
+            }
         }
     }
 
     async fn flush_buffer(buffer: &Arc<Mutex<Vec<String>>>) {
         let mut buffer_guard = buffer.lock().await;
+        let mut to_send = Vec::with_capacity(100);
+        std::mem::swap(&mut *buffer_guard, &mut to_send);
+        drop(buffer_guard); // Release the lock early
 
-        if !buffer_guard.is_empty() {
+        if !to_send.is_empty() {
             // Simulate sending to a destination server
-            println!("Sending {} log messages to the destination server.", buffer_guard.len());
-            buffer_guard.clear();
+            println!("Sending {} log messages to the destination server.", to_send.len());
+            // Here you would send `to_send` to your destination server
         }
     }
 }
