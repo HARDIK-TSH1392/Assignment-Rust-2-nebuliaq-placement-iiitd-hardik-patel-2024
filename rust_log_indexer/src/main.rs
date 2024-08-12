@@ -82,7 +82,7 @@ impl LogServer {
         drop(buffer_guard);
 
         if !to_send.is_empty() {
-            // Simulate sending to a destination server
+            // Simulate sending to a destination server such as quickwit or elastic search
             println!("Sending {} log messages to the destination server.", to_send.len());
         }
     }
