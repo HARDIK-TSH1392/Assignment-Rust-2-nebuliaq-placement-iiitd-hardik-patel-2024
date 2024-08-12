@@ -3,7 +3,7 @@
 
 This project implements a TCP server that buffers incoming log messages and sends them to a destination server in batches. The server is built using the Tokio async runtime in Rust. The client simulates sending log messages to the server at a configurable rate and handles reconnecting if the connection is lost.
 
-Video link for demo: https://drive.google.com/file/d/1r0yIS4DRtFbn-mH6mf8nj-bhq5UHjJYR/view?usp=sharing
+Video link for demo: https://drive.google.com/file/d/1gtGAxCY4p4mcx4dTHPiL4rPtj4qH4PRF/view?usp=sharing
 
 ## Features
 - **TCP Server**: Listens for incoming log messages, buffers them in batches of 100 or every 10 seconds, and sends them to a destination server.

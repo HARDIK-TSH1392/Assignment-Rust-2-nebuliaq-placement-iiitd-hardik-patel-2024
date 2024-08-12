@@ -42,5 +42,5 @@ async fn send_log_messages(rate: u64, addr: &str) {
 async fn main() {
     println!("Starting client...");
     // Sending a message every 100 milliseconds
-    send_log_messages(100, "127.0.0.1:8080").await;  
+    send_log_messages(10, "127.0.0.1:8080").await;  
 }
