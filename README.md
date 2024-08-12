@@ -13,6 +13,7 @@ This project implements a TCP server that buffers incoming log messages and send
 - [Rust](https://www.rust-lang.org/) (version 1.56.0 or later)
 - [Cargo](https://doc.rust-lang.org/cargo/) (Rust's package manager)
 - [Tokio](https://tokio.rs/) (Asynchronous runtime for Rust)
+- [Quickwit](https://quickwit.io/) (Log indexing tool)
 
 ### Installation
 1. Clone this repository:
@@ -54,32 +55,25 @@ The client’s log message rate and the server's address can be configured by mo
 
 The server listens for a shutdown signal (`Ctrl+C`). When the signal is received, it will flush any remaining messages in the buffer before shutting down gracefully.
 
-## Approach
+## Bonus Task: Quickwit Integration
 
-### Server Implementation
+### Approach
 
-- **Concurrency and Buffering**: The server is implemented using the Tokio asynchronous runtime, which allows it to handle multiple client connections concurrently. The incoming log messages are buffered in an in-memory vector. This buffer is shared among tasks using an `Arc<Mutex<Vec<String>>>` to ensure thread safety and to allow multiple tasks to access the buffer concurrently.
+For the bonus task, Quickwit was used as the indexing tool instead of Elasticsearch due to setup issues. Quickwit is a fast and lightweight search engine designed specifically for logs and metrics. The integration follows these steps:
+
+- **Buffering and Flushing**: The server buffers log messages in memory until either 100 messages are accumulated or 10 seconds have passed. The buffered messages are then flushed and prepared for indexing.
   
-- **Buffer Management**: The server buffers log messages until either 100 messages are received or 10 seconds have passed. The buffer is then flushed and the messages are sent to a destination server. The buffer is managed by swapping its contents with an empty vector, which minimizes the time the buffer is locked, improving performance.
+- **Log Message Formatting**: The log messages are formatted as JSON documents, with each message including a timestamp. The JSON documents are then written to a temporary file for indexing.
 
-- **Graceful Shutdown**: The server listens for a shutdown signal (`Ctrl+C`). Upon receiving this signal, the server flushes any remaining log messages in the buffer before shutting down.
+- **Quickwit Indexing**: The server runs the Quickwit `index ingest` command to index the log messages. The command reads the JSON documents from the temporary file and indexes them into Quickwit. If the indexing operation fails, the error is logged for debugging purposes.
 
-### Client Implementation
+### Running the Server with Quickwit Integration
 
-- **Log Message Simulation**: The client simulates log message generation at a configurable rate, sending these messages to the server over a TCP connection. The log messages are formatted in JSON to provide a structured format.
+To start the server with Quickwit integration, make sure Quickwit is installed and configured properly. You can specify the path to your Quickwit binary when initializing the server in `main.rs`. Here’s an example of how to run the server:
 
-- **Reconnection Handling**: If the connection to the server is lost, the client will attempt to reconnect automatically, logging each attempt. This ensures that the client can continue sending log messages even if the server temporarily goes offline.
+```bash
+cargo run --bin rust_log_indexer
+```
 
-### Code Quality
+The server will index the log messages into Quickwit when the buffer is flushed. The indexed logs can then be searched or queried using Quickwit’s search capabilities.
 
-The code is structured to be maintainable and extendable, with clear separation of concerns. Error handling is implemented to ensure that the system remains robust in the face of network issues or other unexpected conditions. Logging statements are included to help with debugging and monitoring the server's and client's behavior.
-
-## Future Enhancements
-
-- **Destination Server Implementation**: Currently, the server simulates sending log messages to a destination server. A real implementation could be added to forward these messages to an actual logging server or storage system.
-- **Configuration Options**: The server and client could be enhanced with command-line arguments or configuration files to make them more flexible.
-- **Testing**: Unit tests and integration tests could be added to ensure the correctness and robustness of the implementation under various scenarios.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
