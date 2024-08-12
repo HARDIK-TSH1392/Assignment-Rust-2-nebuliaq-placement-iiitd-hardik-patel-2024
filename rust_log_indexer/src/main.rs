@@ -22,7 +22,7 @@ impl LogServer {
         let listener = TcpListener::bind(addr).await.unwrap();
         let buffer = Arc::clone(&self.buffer);
 
-        // Handle the periodic flushing of the buffer
+        // Handling the periodic flushing of the buffer
         let buffer_clone = Arc::clone(&self.buffer);
         tokio::spawn(async move {
             let mut interval = time::interval(Duration::from_secs(10));
@@ -33,7 +33,6 @@ impl LogServer {
             }
         });
 
-        // Graceful shutdown handling
         let shutdown_signal = signal::ctrl_c();
         tokio::select! {
             _ = async {
@@ -80,12 +79,11 @@ impl LogServer {
         let mut buffer_guard = buffer.lock().await;
         let mut to_send = Vec::with_capacity(100);
         std::mem::swap(&mut *buffer_guard, &mut to_send);
-        drop(buffer_guard); // Release the lock early
+        drop(buffer_guard);
 
         if !to_send.is_empty() {
             // Simulate sending to a destination server
             println!("Sending {} log messages to the destination server.", to_send.len());
-            // Here you would send `to_send` to your destination server
         }
     }
 }
