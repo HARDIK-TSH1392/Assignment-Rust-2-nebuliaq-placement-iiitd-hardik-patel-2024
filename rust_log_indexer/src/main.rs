@@ -11,12 +11,14 @@ struct LogServer {
 
 impl LogServer {
     async fn new() -> Self {
+        println!("Initializing server..."); 
         Self {
             buffer: Arc::new(Mutex::new(Vec::with_capacity(100))),
         }
     }
 
     async fn run(&self, addr: &str) {
+        println!("Binding to address: {}", addr); 
         let listener = TcpListener::bind(addr).await.unwrap();
         let buffer = Arc::clone(&self.buffer);
 
@@ -24,9 +26,9 @@ impl LogServer {
         let buffer_clone = Arc::clone(&self.buffer);
         tokio::spawn(async move {
             let mut interval = time::interval(Duration::from_secs(10));
-
             loop {
                 interval.tick().await;
+                println!("Flushing buffer due to time interval..."); 
                 Self::flush_buffer(&buffer_clone).await;
             }
         });
@@ -36,21 +38,25 @@ impl LogServer {
         tokio::select! {
             _ = async {
                 loop {
+                    println!("Waiting for client connection..."); 
                     let (mut socket, _) = listener.accept().await.unwrap();
+                    println!("Client connected."); 
                     let buffer_clone = Arc::clone(&buffer);
 
                     tokio::spawn(async move {
                         let mut buf = [0; 1024];
                         loop {
                             match socket.read(&mut buf).await {
-                                Ok(0) => break, // Connection closed by client
+                                // Connection closed by client
+                                Ok(0) => break,
                                 Ok(n) => {
                                     let msg = String::from_utf8_lossy(&buf[..n]).to_string();
+                                    println!("Received message: {}", msg); 
                                     let mut buffer_guard = buffer_clone.lock().await;
                                     buffer_guard.push(msg);
 
                                     if buffer_guard.len() >= 100 {
-                                        // Flush buffer when it reaches 100 messages
+                                        println!("Buffer full, flushing...");
                                         Self::flush_buffer(&buffer_clone).await;
                                     }
                                 }
