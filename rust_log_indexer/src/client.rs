@@ -49,5 +49,5 @@ async fn main() {
     println!("Starting client...");
     // Sending a message every 100 milliseconds
     // Can configure the time window from the first arugement of the function
-    send_log_messages(100, "127.0.0.1:8080").await; 
+    send_log_messages(10, "127.0.0.1:8080").await; 
 }
