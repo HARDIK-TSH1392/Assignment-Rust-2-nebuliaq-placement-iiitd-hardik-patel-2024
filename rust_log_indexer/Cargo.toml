@@ -5,3 +5,11 @@ edition = "2021"
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
+
+[[bin]]
+name = "rust_log_indexer"
+path = "src/main.rs"
+
+[[bin]]
+name = "client"
+path = "src/client.rs"

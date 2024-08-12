@@ -1,0 +1,1 @@
+/Users/hardik/Desktop/Assignment-Rust-2-nebuliaq-placement-iiitd-hardik-patel-2024/rust_log_indexer/target/debug/rust_log_indexer: /Users/hardik/Desktop/Assignment-Rust-2-nebuliaq-placement-iiitd-hardik-patel-2024/rust_log_indexer/src/main.rs
