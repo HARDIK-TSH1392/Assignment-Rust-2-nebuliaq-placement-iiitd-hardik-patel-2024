@@ -55,7 +55,7 @@ impl LogServer {
                                 Ok(0) => break,
                                 Ok(n) => {
                                     let received_data = &buf[..n];
-                                    println!("Received raw data: {:?}", received_data);
+                                    // println!("Received raw data: {:?}", received_data);
 
                                     let messages = String::from_utf8_lossy(received_data)
                                         .split('\n')
