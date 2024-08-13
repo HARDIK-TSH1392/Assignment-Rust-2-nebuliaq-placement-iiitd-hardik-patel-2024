@@ -79,3 +79,34 @@ cargo run --bin rust_log_indexer
 
 The server will index the log messages into Quickwit when the buffer is flushed. The indexed logs can then be searched or queried using Quickwit’s search capabilities.
 
+### Quickwit Installation and Setup
+
+Follow these steps to download and run Quickwit:
+
+1. **Download Quickwit**:
+    - Visit the [Quickwit GitHub Releases page](https://github.com/quickwit-inc/quickwit/releases) to download the latest version of Quickwit.
+    - Download the appropriate version for your system (e.g., `quickwit-v0.8.2-linux-x64.tar.gz` for Linux).
+  
+2. **Extract Quickwit**:
+   ```bash
+   tar -xvzf quickwit-v0.8.2-linux-x64.tar.gz
+   ```
+
+3. **Move to Desired Directory**:
+   Move the extracted Quickwit files to your desired location, for example:
+   ```bash
+   mv quickwit-v0.8.2 /usr/local/bin/quickwit
+   ```
+
+4. **Create an Index**:
+   Initialize a new index where your logs will be stored. Replace `<index-id>` with your desired index name:
+   ```bash
+   ./quickwit index create --index-id=<index-id> --index-uri=file:///tmp/<index-id>
+   ```
+
+5. **Run Quickwit**:
+   Start Quickwit using the following command:
+   ```bash
+   ./quickwit serve --config /path/to/quickwit/config.yaml
+   ```
+
